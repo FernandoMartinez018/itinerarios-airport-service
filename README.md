@@ -38,8 +38,21 @@ mvn spring-boot:run
 | GET | `/api/airports/{id}` | Aeropuerto por id interno |
 | GET | `/api/airports/iata/{iataCode}` | Aeropuerto por código IATA (consulta y sincroniza contra API Colombia si no existe localmente) |
 
-## Pendiente (Nivel 2+)
+## Cache (Nivel 2, Fase 9)
 
-- Cache Redis (patrón Cache-Aside) en el flujo de consulta.
+`findById` y `findByIataCode` están anotados con `@Cacheable` (Redis, patrón
+Cache-Aside, sección 27). En un MISS, Spring ejecuta el método completo —incluida
+la cadena PostgreSQL → API Colombia cuando aplica— y cachea automáticamente el
+resultado devuelto. Los errores (excepciones) nunca se cachean, para que un 404
+no quede "pegado" si el aeropuerto aparece más tarde en API Colombia.
+
+TTL configurable vía `AIRPORTS_CACHE_TTL_MINUTES` (default 60 minutos).
+
+Para demostrar el hit/miss (evidencia de la sección 96): llamar dos veces seguidas
+a `GET /api/airports/iata/{codigo}` y comparar el tiempo de respuesta, o inspeccionar
+las claves en Redis con `redis-cli KEYS "airports-by-iata::*"`.
+
+## Pendiente (Nivel 2+, restante)
+
 - Retry / Backoff / Jitter / Circuit Breaker en `ColombiaAirportAdapter`.
 - OpenTelemetry + Jaeger.
