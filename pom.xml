@@ -31,6 +31,11 @@
     <properties>
         <java.version>21</java.version>
         <springdoc.version>2.8.5</springdoc.version>
+        <!-- resilience4j-spring-boot4 confirmado como starter existente para
+             Spring Boot 4 (ver ADR-013 en itinerarios-docs). Verificar la
+             última versión publicada contra Maven Central antes de fijarla;
+             2.2.x era la línea vigente al momento de escribir esto. -->
+        <resilience4j.version>2.2.0</resilience4j.version>
     </properties>
 
     <dependencies>
@@ -53,6 +58,15 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot4</artifactId>
+            <version>${resilience4j.version}</version>
         </dependency>
 
         <dependency>
@@ -80,6 +94,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.2.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

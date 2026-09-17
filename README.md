@@ -38,6 +38,26 @@ mvn spring-boot:run
 | GET | `/api/airports/{id}` | Aeropuerto por id interno |
 | GET | `/api/airports/iata/{iataCode}` | Aeropuerto por código IATA (consulta y sincroniza contra API Colombia si no existe localmente) |
 
+## Resiliencia (Nivel 2, Fase 10)
+
+`ColombiaAirportAdapter.findAll()` y `findByKeyword()` están protegidos con
+`@Retry` + `@CircuitBreaker` (Resilience4j), configurados en `application.yml`:
+
+- **Retry**: hasta 3 intentos, backoff exponencial con jitter (multiplicador 2x,
+  hasta 50% de variación aleatoria) — evita que múltiples instancias reintenten
+  exactamente al mismo tiempo.
+- **Circuit Breaker**: ventana de 10 llamadas, mínimo 5 para evaluar, abre con
+  ≥50% de fallos, permanece abierto 15s, permite 3 llamadas de prueba en
+  half-open.
+
+Ambas operaciones son GET (idempotentes), por lo que reintentarlas es seguro.
+Cuando el circuito está abierto, el fallback lanza `ExternalProviderException`
+(HTTP 502) en vez de intentar la llamada real — falla rápido en vez de esperar
+un timeout en cada request mientras el proveedor está caído.
+
+Ver `CircuitBreakerFailureTest` para la prueba de fallo controlado que demuestra
+la transición `CLOSED -> OPEN -> HALF_OPEN -> CLOSED` (sección 29).
+
 ## Cache (Nivel 2, Fase 9)
 
 `findById` y `findByIataCode` están anotados con `@Cacheable` (Redis, patrón
@@ -54,5 +74,4 @@ las claves en Redis con `redis-cli KEYS "airports-by-iata::*"`.
 
 ## Pendiente (Nivel 2+, restante)
 
-- Retry / Backoff / Jitter / Circuit Breaker en `ColombiaAirportAdapter`.
 - OpenTelemetry + Jaeger.
