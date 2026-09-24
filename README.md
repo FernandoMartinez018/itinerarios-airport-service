@@ -72,6 +72,27 @@ Para demostrar el hit/miss (evidencia de la sección 96): llamar dos veces segui
 a `GET /api/airports/iata/{codigo}` y comparar el tiempo de respuesta, o inspeccionar
 las claves en Redis con `redis-cli KEYS "airports-by-iata::*"`.
 
+## Observabilidad (Nivel 2, Fase 11)
+
+Trazas distribuidas vía **auto-instrumentación** con el agente Java de OpenTelemetry
+(sin cambios de código): el Dockerfile descarga `opentelemetry-javaagent.jar` y
+`docker-compose.yml` lo activa con `JAVA_TOOL_OPTIONS=-javaagent:...`. Las trazas
+salen por OTLP/gRPC hacia `otel-collector`, que las reenvía a Jaeger
+(`http://localhost:16686`).
+
+Métricas vía Micrometer + `micrometer-registry-prometheus`, expuestas en
+`/actuator/prometheus` y scrapeadas por Prometheus (`http://localhost:9090`),
+visualizables en Grafana (`http://localhost:3000`, datasource ya provisionado).
+
+**Conviven dos identificadores distintos y complementarios en los logs**: el
+`correlationId` propio (`X-Correlation-ID`, sección 63, ya implementado desde
+Nivel 1) para rastrear un request de negocio de punta a punta en los logs de
+texto, y el `trace_id`/`span_id` que el agente de OpenTelemetry agrega
+automáticamente al MDC para correlacionar con la traza visual en Jaeger. No se
+unificaron deliberadamente — resolver ambos con el mismo mecanismo hubiera
+requerido reemplazar el filtro de correlación ya probado de Nivel 1 sin
+necesidad real.
+
 ## Pendiente (Nivel 2+, restante)
 
-- OpenTelemetry + Jaeger.
+Ninguno — Nivel 2 completo para este servicio. Lo que sigue es Nivel 3.

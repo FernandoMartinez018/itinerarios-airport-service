@@ -9,6 +9,13 @@ RUN mvn -B clean package -DskipTests
 # Etapa de ejecución
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+
+# Agente OpenTelemetry (auto-instrumentación, sección 61 - Fase 11). Se
+# descarga siempre la última versión estable oficial; para reproducibilidad
+# en un entorno real, fijar una versión exacta en vez de "latest".
+RUN wget -O /app/opentelemetry-javaagent.jar \
+    https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
+
 COPY --from=build /app/target/airport-service-*.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
