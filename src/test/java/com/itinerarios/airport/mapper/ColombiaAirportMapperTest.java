@@ -162,6 +162,37 @@ class ColombiaAirportMapperTest {
     }
 
     @Test
+    void shouldSwapCoordinatesWhenProviderInvertsThem() {
+        // Dato real de API Colombia para PEI: latitude=-75.73, longitude=4.81 (invertidos).
+        ColombiaAirportResponse inverted = new ColombiaAirportResponse(
+                10L, "Aeropuerto Internacional Matecaña", "PEI", "SKPE", "Internacional",
+                1L, null, 2L, null, -75.7393969995227, 4.81269699992);
+        ColombiaAirportResponse correct = new ColombiaAirportResponse(
+                3L, "El Dorado", "BOG", "SKBO", "Internacional",
+                1L, null, 2L, null, 4.7016, -74.1469);
+
+        Airport fixed = mapper.toEntity(inverted);
+        Airport untouched = mapper.toEntity(correct);
+
+        assertThat(fixed.getLatitude().doubleValue()).isEqualTo(4.81269699992);
+        assertThat(fixed.getLongitude().doubleValue()).isEqualTo(-75.7393969995227);
+        assertThat(untouched.getLatitude().doubleValue()).isEqualTo(4.7016);
+        assertThat(untouched.getLongitude().doubleValue()).isEqualTo(-74.1469);
+
+        mapper.updateEntity(untouched, inverted);
+        assertThat(untouched.getLatitude().doubleValue()).isEqualTo(4.81269699992);
+    }
+
+    @Test
+    void shouldTreatNotAvailableCodesAsNull() {
+        ColombiaAirportResponse catam = new ColombiaAirportResponse(
+                44L, "Aeropuerto Militar CATAM", "BOG", "N/A", "Militar",
+                1L, null, 2L, null, 4.69, -74.14);
+
+        assertThat(mapper.toEntity(catam).getIcaoCode()).isNull();
+    }
+
+    @Test
     void shouldHandleNullCoordinates() {
 
         ColombiaAirportResponse external = new ColombiaAirportResponse(

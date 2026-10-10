@@ -25,8 +25,8 @@ public class ColombiaAirportMapper {
                 external.name(),
                 city,
                 department,
-                external.latitude() != null ? BigDecimal.valueOf(external.latitude()) : null,
-                external.longitude() != null ? BigDecimal.valueOf(external.longitude()) : null
+                latitude(external),
+                longitude(external)
         );
         airport.setActive(true);
         return airport;
@@ -39,8 +39,25 @@ public class ColombiaAirportMapper {
         airport.setName(external.name());
         airport.setCity(external.city() != null ? external.city().name() : null);
         airport.setDepartment(external.department() != null ? external.department().name() : null);
-        airport.setLatitude(external.latitude() != null ? BigDecimal.valueOf(external.latitude()) : null);
-        airport.setLongitude(external.longitude() != null ? BigDecimal.valueOf(external.longitude()) : null);
+        airport.setLatitude(latitude(external));
+        airport.setLongitude(longitude(external));
+    }
+
+    // API Colombia invierte latitude/longitude en casi todos sus aeropuertos (51 de 52, 2026-10-09).
+    // En Colombia |lat| <= ~14 y |lon| >= ~66: una "latitud" > 20 con "longitud" <= 20 esta invertida.
+    private static boolean swapped(ColombiaAirportResponse external) {
+        return external.latitude() != null && external.longitude() != null
+                && Math.abs(external.latitude()) > 20 && Math.abs(external.longitude()) <= 20;
+    }
+
+    private static BigDecimal latitude(ColombiaAirportResponse external) {
+        Double value = swapped(external) ? external.longitude() : external.latitude();
+        return value != null ? BigDecimal.valueOf(value) : null;
+    }
+
+    private static BigDecimal longitude(ColombiaAirportResponse external) {
+        Double value = swapped(external) ? external.latitude() : external.longitude();
+        return value != null ? BigDecimal.valueOf(value) : null;
     }
 
     public AirportDto toDto(Airport airport) {
@@ -58,7 +75,8 @@ public class ColombiaAirportMapper {
         );
     }
 
+    // API Colombia usa "N/A" como codigo ausente; guardarlo literal romperia los UNIQUE de iata/icao.
     private String blankToNull(String value) {
-        return (value == null || value.isBlank()) ? null : value;
+        return (value == null || value.isBlank() || "N/A".equalsIgnoreCase(value.trim())) ? null : value;
     }
 }
