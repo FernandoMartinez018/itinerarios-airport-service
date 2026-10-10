@@ -453,6 +453,20 @@ class ColombiaAirportAdapterTest {
     }
 
     @Test
+    void shouldPreferAirportWithRealOaciCodeWhenIataIsRepeated() {
+        ColombiaAirportResponse catam = createAirport(44L, "Aeropuerto Militar CATAM", "BOG", "N/A");
+        ColombiaAirportResponse elDorado = createAirport(3L, "Aeropuerto Internacional El Dorado", "BOG", "SKBO");
+
+        when(colombiaApiRestClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(eq("/Airport/search/{keyword}"), eq("BOG"))).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(ColombiaAirportResponse[].class))
+                .thenReturn(new ColombiaAirportResponse[]{catam, elDorado});
+
+        assertThat(adapter.findByIataCode("BOG")).isEqualTo(elDorado);
+    }
+
+    @Test
     void shouldReturnNullWhenAirportIataCodeIsNull() {
         ColombiaAirportResponse airport =
                 createAirport(

@@ -9,9 +9,9 @@ import com.itinerarios.airport.entity.Airport;
 import com.itinerarios.airport.exception.AirportNotFoundException;
 import com.itinerarios.airport.mapper.ColombiaAirportMapper;
 import com.itinerarios.airport.repository.AirportRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -35,8 +35,13 @@ class AirportServiceTest {
 
     private final ColombiaAirportMapper mapper = new ColombiaAirportMapper();
 
-    @InjectMocks
     private AirportService airportService;
+
+    // @InjectMocks no inyecta el mapper real (no es @Mock): se construye a mano.
+    @BeforeEach
+    void setUp() {
+        airportService = new AirportService(airportRepository, colombiaAirportAdapter, mapper);
+    }
 
     @Test
     void findById_devuelveAeropuertoCuandoExiste() {

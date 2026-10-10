@@ -1,6 +1,6 @@
 package com.itinerarios.airport.dto.adapter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.itinerarios.airport.dto.adapter.ColombiaCityRef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

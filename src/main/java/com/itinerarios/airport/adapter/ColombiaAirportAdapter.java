@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -59,7 +60,9 @@ public class ColombiaAirportAdapter {
         List<ColombiaAirportResponse> matches = findByKeyword(iataCode);
         return matches.stream()
                 .filter(a -> iataCode.equalsIgnoreCase(a.iataCode()))
-                .findFirst()
+                // API Colombia repite IATA (BOG: CATAM militar "N/A" y El Dorado "SKBO"):
+                // se prefiere el que tiene codigo OACI real; en empate, el primero.
+                .min(Comparator.comparing(a -> a.oaciCode() == null || "N/A".equalsIgnoreCase(a.oaciCode())))
                 .orElse(null);
     }
 

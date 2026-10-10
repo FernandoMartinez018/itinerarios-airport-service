@@ -1,6 +1,7 @@
 package com.itinerarios.airport.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import com.itinerarios.airport.dto.AirportDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -37,7 +38,10 @@ public class RedisCacheConfig {
             ObjectMapper objectMapper,
             @Value("${cache.airports.ttl-minutes:60}") long ttlMinutes) {
 
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        // Serializer tipado: ambas caches guardan AirportDto. El generico sin default typing
+        // devolvia LinkedHashMap en un HIT (ClassCastException); activar default typing
+        // abriria deserializacion polimorfica, que no hace falta (ADR-015).
+        JacksonJsonRedisSerializer<AirportDto> jsonSerializer = new JacksonJsonRedisSerializer<>(objectMapper, AirportDto.class);
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(ttlMinutes))

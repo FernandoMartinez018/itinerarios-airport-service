@@ -14,7 +14,7 @@ WORKDIR /app
 # descarga siempre la última versión estable oficial; para reproducibilidad
 # en un entorno real, fijar una versión exacta en vez de "latest".
 RUN wget -O /app/opentelemetry-javaagent.jar \
-    https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
+    https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.31.1/opentelemetry-javaagent.jar
 
 COPY --from=build /app/target/airport-service-*.jar app.jar
 EXPOSE 8081
