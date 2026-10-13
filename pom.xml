@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        IMPORTANTE (sección 4 de la especificación maestra):
+        Spring Boot 3.5.x llegó a EOL (end of life) el 30 de junio de 2026.
+        Las únicas líneas activamente soportadas al momento de crear este pom.xml
+        son 4.0.x y 4.1.x, construidas sobre Spring Framework 7.
+        Antes de fijar esta versión de forma definitiva, verificar:
+          - Compatibilidad de Spring Cloud Gateway con Spring Boot 4.x (repo itinerarios-gateway).
+          - Compatibilidad de Springdoc OpenAPI con Spring Boot 4.x.
+          - Compatibilidad de Flyway con la versión de PostgreSQL usada.
+        Fuente: https://github.com/spring-projects/spring-boot/wiki
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.itinerarios</groupId>
+    <artifactId>airport-service</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>airport-service</name>
+    <description>Microservicio de aeropuertos - Sistema de Itinerarios Personales</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <springdoc.version>3.0.0</springdoc.version>
+        <!-- resilience4j-spring-boot4 confirmado como starter existente para
+             Spring Boot 4 (ver ADR-013 en itinerarios-docs). Verificar la
+             última versión publicada contra Maven Central antes de fijarla;
+             2.2.x era la línea vigente al momento de escribir esto. -->
+        <resilience4j.version>2.4.0</resilience4j.version>
+    </properties>
+
+
+    <!--
+        Ajustes Spring Boot 4 (ADR-015, auditoría 2026-10-09):
+        - spring-boot-starter-web -> spring-boot-starter-webmvc (nombre modular de Boot 4).
+        - flyway-core -> spring-boot-starter-flyway: en Boot 4 la autoconfiguración de
+          Flyway vive en su propio módulo; sin el starter las migraciones NO se ejecutan
+          y ddl-auto=validate falla al arrancar.
+        - spring-boot-starter-aop -> spring-boot-starter-aspectj (renombrado en Boot 4).
+        - springdoc 2.8.x (Boot 3) -> 3.0.x (Boot 4 / Spring Framework 7).
+        - spring-boot-starter-webmvc-test: MockMvc/@WebMvcTest quedaron en módulo propio.
+        Verificar con `mvn -B clean verify` (Maven Central no estaba accesible al editar).
+    -->
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aspectj</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot4</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- Documentación Swagger/OpenAPI - sección 66 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.2.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
