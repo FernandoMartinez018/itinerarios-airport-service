@@ -10,6 +10,13 @@ spring:
     username: ${DB_USERNAME:airport_user}
     password: ${DB_PASSWORD:changeme}
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Emisor de los JWT S2S (Keycloak, paso 31). Se resuelve en el primer uso, no al arrancar.
+          issuer-uri: ${OAUTH2_ISSUER_URI:http://localhost:8180/realms/itinerarios}
+
   jpa:
     hibernate:
       ddl-auto: validate
